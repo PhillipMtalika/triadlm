@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>TriadLM comparison</title>
+<style>body{font-family:sans-serif;max-width:1200px;margin:auto;padding:16px}
+.cols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.col{border:1px solid #ccc;border-radius:8px;padding:8px;white-space:pre-wrap}
+textarea{width:100%;height:80px}</style></head>
+<body>
+<h2>TriadLM — one prompt, four branches</h2>
+<textarea id="p" placeholder="Type a prompt..."></textarea><br><br>
+<button onclick="go()">Compare</button>
+<div class="cols" style="margin-top:12px">
+<div><h3>base</h3><div class="col" id="c-base"></div></div>
+<div><h3>sft</h3><div class="col" id="c-sft"></div></div>
+<div><h3>constitutional</h3><div class="col" id="c-constitutional"></div></div>
+<div><h3>grounded</h3><div class="col" id="c-grounded"></div></div>
+</div>
+<script>
+async function go(){
+  const prompt=document.getElementById('p').value;
+  const r=await fetch('/v1/compare',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+  const j=await r.json();
+  for(const v of ['base','sft','constitutional','grounded']){
+    document.getElementById('c-'+v).textContent=
+      typeof j[v]==='string'?j[v]:JSON.stringify(j[v],null,2);
+  }
+}
+</script>
+</body></html>

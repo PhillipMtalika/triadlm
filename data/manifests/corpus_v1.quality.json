@@ -1,0 +1,36 @@
+{
+  "dedup_rate": 0.12422360248447205,
+  "language_histogram": {
+    "en": 316,
+    "ny": 6
+  },
+  "doc_length_histogram": {
+    "min": 1,
+    "p50": 23,
+    "max": 670,
+    "mean": 83.80434782608695
+  },
+  "top_duplicates": [
+    [
+      "bdea2ac00c1a1ee6",
+      10
+    ],
+    [
+      "b3abd5f77add9f4a",
+      5
+    ],
+    [
+      "2c43b97bebf890bb",
+      5
+    ],
+    [
+      "af1086264c095cb1",
+      5
+    ],
+    [
+      "b2e8673b1d014f5d",
+      3
+    ]
+  ],
+  "documents": 322
+}

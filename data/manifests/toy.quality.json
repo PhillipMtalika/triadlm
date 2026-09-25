@@ -1,0 +1,9 @@
+{
+  "documents": 282,
+  "tokens": 83813,
+  "duplicates_dropped": 40,
+  "language_histogram": {
+    "en": 276,
+    "ny": 6
+  }
+}

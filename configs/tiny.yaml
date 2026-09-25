@@ -1,0 +1,35 @@
+# Milestone 0: toy run. BPE vocab 512 on data/raw/*.txt (near char-level scale).
+model:
+  vocab_size: 512
+  block_size: 32
+  n_layer: 4
+  n_head: 4
+  n_embd: 256
+  dropout: 0.0
+  bias: false
+  tie_weights: true
+train:
+  batch_size: 8
+  grad_accum_steps: 1
+  max_steps: 20
+  lr: 5.0e-4
+  min_lr: 5.0e-5
+  warmup_steps: 2
+  weight_decay: 0.01
+  betas: [0.9, 0.95]
+  grad_clip: 1.0
+  precision: fp32
+  eval_interval: 10
+  eval_iters: 10
+  checkpoint_interval: 10
+  seed: 0
+data:
+  corpus_glob: "data/raw/*.txt"
+  manifest: data/manifests/toy.json
+  shard_dir: data/shards/toy
+  train_split: 0.8
+tokenizer:
+  vocab_size: 512
+  save_dir: data/checkpoints/tiny/tokenizer
+run:
+  out_dir: data/checkpoints/tiny

@@ -1,0 +1,10 @@
+torch>=2.2
+numpy
+tokenizers>=0.15
+pyyaml
+tqdm
+fastapi
+uvicorn
+pydantic>=2
+requests
+huggingface_hub

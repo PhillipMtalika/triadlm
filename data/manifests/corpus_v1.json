@@ -1,0 +1,17 @@
+{
+  "name": "corpus_v1",
+  "source": "data/raw/*.txt",
+  "license": "CC-BY-SA (Wikipedia) + project-internal (seed)",
+  "language": "mixed",
+  "document_count": 282,
+  "token_count": 36810,
+  "filtering_rules": [
+    "dedup:sha256-exact",
+    "min_length:1_doc",
+    "lang_id_threshold:heuristic"
+  ],
+  "train_split": 0.98,
+  "val_split": 0.02,
+  "sha256_of_shards": "5ef9caf7b7497f8638a1d86d62ee7c25eabdc9e245b34ba5298d9514daca9256",
+  "created_at": "2026-09-25T22:24:02.429515+00:00"
+}

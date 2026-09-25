@@ -1,0 +1,9 @@
+run_id,variant,checkpoint,config_hash,param_count,context_length,training_tokens,wall_clock_seconds,hardware,dataset_version,language_mixture,val_loss,perplexity,instruction_following,factuality,citation_accuracy,over_refusal_rate,refusal_precision,chichewa_gap,latency_p50_ms,latency_p95_ms,tokens_per_second,timestamp
+20260925221028-ee83,base,data/checkpoints/tiny/final.pt,de1da58ee9c3f140,3311872,128,20480,4.0,cpu,data/manifests/toy.json,,nan,nan,,,,,,,,,,2026-09-25T22:10:28.140705+00:00
+20260925221103-6539,base,data/checkpoints/tiny/final.pt,ab0314fd4fdbeef2,3295488,64,10240,4.8,cpu,data/manifests/toy.json,,nan,nan,,,,,,,,,,2026-09-25T22:11:03.827202+00:00
+20260925221202-8929,base,data/checkpoints/tiny/final.pt,316ce3c9a9bb1c0f,3287296,32,5120,3.7,cpu,data/manifests/toy.json,,6.0619,429.2,,,,,,,,,,2026-09-25T22:12:02.496357+00:00
+20260925221214-9bbc,sft,data/checkpoints/tiny/sft.pt,316ce3c9a9bb1c0f,3287296,,,,,,,,,,,,,,,,,,2026-09-25T22:12:14.177722+00:00
+20260925221225-a142,base,data/checkpoints/tiny/final.pt,316ce3c9a9bb1c0f,3287296,32,5120,0,cpu,data/manifests/toy.json,{},6.0619,429.2,0.0,0.2,0.0,0.0,1.0,0.077,96.9,107.4,466.7,2026-09-25T22:12:25.308006+00:00
+20260925221237-6c6a,sft,data/checkpoints/tiny/sft.pt,316ce3c9a9bb1c0f,3287296,32,0,0,cpu,data/manifests/toy.json,{},6.128,458.5,0.0,0.067,0.0,0.0,1.0,-0.077,99.1,130.1,453.4,2026-09-25T22:12:37.256270+00:00
+20260925221245-5aa7,grounded,data/checkpoints/tiny/sft.pt,316ce3c9a9bb1c0f,3287296,32,0,0,cpu,data/manifests/toy.json,{},6.128,458.5,0.0,0.133,1.0,0.0,1.0,0.077,102.3,127.1,539024.4,2026-09-25T22:12:45.013651+00:00
+20260925221415-6c5f,constitutional,data/checkpoints/tiny/constitutional_out/constitutional.pt,316ce3c9a9bb1c0f,3287296,32,0,0,cpu,data/manifests/toy.json,{},6.1643,475.46,0.0,0.033,0.0,0.0,1.0,0.0,100.4,113.8,453.7,2026-09-25T22:14:15.033934+00:00

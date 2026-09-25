@@ -1,0 +1,34 @@
+# Milestone 1 target. ~50M params: 12*n_layer*n_embd^2 = 12*8*512^2 ~= 25M
+# non-embedding + embeddings (tied: 1x vocab*n_embd).
+model:
+  vocab_size: 8192
+  block_size: 512
+  n_layer: 8
+  n_head: 8
+  n_embd: 512
+  dropout: 0.1
+  bias: false
+  tie_weights: true
+train:
+  batch_size: 32
+  grad_accum_steps: 4
+  max_steps: 20000
+  lr: 3.0e-4
+  min_lr: 3.0e-5
+  warmup_steps: 500
+  weight_decay: 0.1
+  betas: [0.9, 0.95]
+  grad_clip: 1.0
+  precision: bf16
+  eval_interval: 500
+  eval_iters: 100
+  checkpoint_interval: 1000
+  seed: 1337
+data:
+  manifest: data/manifests/corpus_v1.json
+  shard_dir: data/shards/corpus_v1
+tokenizer:
+  vocab_size: 8192
+  save_dir: data/checkpoints/base_50m/tokenizer
+run:
+  out_dir: data/checkpoints/base_50m
