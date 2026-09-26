@@ -124,7 +124,7 @@ def main() -> None:
                            args.max_shard_tokens)
     manifest = build_manifest([{
         "corpus": "corpus_v2",
-        "source": "wikimedia/wikipedia en+ny (stream) + jw300 en-ny + " + args.corpus_glob,
+        "source": "wikimedia/wikipedia en+ny (stream) + opus CCAligned en-ny + " + args.corpus_glob,
         "license": LICENSE_V2, "language": "mixed",
         "documents": stats["documents"], "tokens": stats["tokens"],
         "filtering_rules": ["dedup:sha256-exact", "min_length:1_doc",
