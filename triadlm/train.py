@@ -18,7 +18,7 @@ import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from .data import PackedDataset, load_manifest
+from .data import PackedDataset, load_manifest, shard_paths
 from .model import GPT, config_from_dict
 from .tokenizer import TriadTokenizer
 
@@ -197,9 +197,9 @@ def train(config_path: str, resume: str | None = None) -> dict:
                                      tuple(t.get("betas", [0.9, 0.95])))
     _ = load_manifest(cfg["data"]["manifest"])
     shard_dir = cfg["data"]["shard_dir"]
-    train_ds = PackedDataset([os.path.join(shard_dir, "train.pt")],
+    train_ds = PackedDataset(shard_paths(shard_dir, "train"),
                              model.config.block_size)
-    val_ds = PackedDataset([os.path.join(shard_dir, "val.pt")],
+    val_ds = PackedDataset(shard_paths(shard_dir, "val"),
                            model.config.block_size)
     batcher = _Batcher(train_ds, int(t["batch_size"]), int(t.get("seed", 1337)))
     val_dl = DataLoader(val_ds, batch_size=int(t["batch_size"]))

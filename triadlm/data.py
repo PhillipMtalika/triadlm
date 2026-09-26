@@ -26,6 +26,9 @@ def build_manifest(sources: list[dict], out_path: str) -> dict:
     shard_dir = sources[0].get("shard_dir", "") if sources else ""
     shards = sorted(f for f in os.listdir(shard_dir) if f.endswith(".pt")) if shard_dir and os.path.isdir(shard_dir) else []
     import datetime
+    h = hashlib.sha256()
+    for s in shards:
+        h.update(_sha256_file(os.path.join(shard_dir, s)).encode())
     manifest: dict = {
         "name": sources[0].get("corpus", "corpus") if sources else "corpus",
         "source": "; ".join(s.get("source", "") for s in sources),
@@ -36,7 +39,7 @@ def build_manifest(sources: list[dict], out_path: str) -> dict:
         "filtering_rules": sources[0].get("filtering_rules", []) if sources else [],
         "train_split": sources[0].get("train_split", 0.98) if sources else 0.98,
         "val_split": sources[0].get("val_split", 0.02) if sources else 0.02,
-        "sha256_of_shards": _sha256_file(os.path.join(shard_dir, shards[0])) if shards else "",
+        "sha256_of_shards": h.hexdigest() if shards else "",
         "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     }
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
@@ -49,6 +52,16 @@ def load_manifest(path: str) -> dict:
     """Load a manifest JSON."""
     with open(path) as f:
         return json.load(f)
+
+
+def shard_paths(shard_dir: str, split: str) -> list[str]:
+    """Sorted shard paths for a split (multi-shard names, legacy fallback)."""
+    import glob as _g
+    paths = sorted(_g.glob(os.path.join(shard_dir, f"{split}-*.pt")))
+    if not paths:
+        legacy = os.path.join(shard_dir, f"{split}.pt")
+        paths = [legacy] if os.path.exists(legacy) else []
+    return paths
 
 
 class PackedDataset(Dataset):

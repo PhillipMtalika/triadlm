@@ -199,12 +199,12 @@ def run_eval(checkpoint: str, variant: str, probes_path: str, out_path: str,
         import torch as _t
         from torch.utils.data import DataLoader as _DL
         from triadlm.data import PackedDataset as _PD
+        from triadlm.data import shard_paths as _sp
         from triadlm.model import GPT as _GPT
         from triadlm.model import config_from_dict as _cfd
         from triadlm.train import eval_loss as _ev
         _m = _cfd(cfg["model"])
-        _vd = _PD([os.path.join(cfg["data"]["shard_dir"], "val.pt")],
-                  _m.block_size)
+        _vd = _PD(_sp(cfg["data"]["shard_dir"], "val"), _m.block_size)
         if len(_vd):
             _m2 = _GPT(_m)
             _m2.load_state_dict(_raw["model_state"])

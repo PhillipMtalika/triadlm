@@ -10,3 +10,4 @@ data/registry/*
 *.bin
 tokenizer-out/
 wandb/
+data/tmp/
