@@ -1,0 +1,36 @@
+# Real M1 on corpus_v2 (Kaggle free T4, fp16).
+# ~15-20M tokens: 4000 steps x 16 batch x 2 accum x 512 ctx ~= 65M token-exposures (~3-4 epochs).
+model:
+  vocab_size: 8192
+  block_size: 512
+  n_layer: 8
+  n_head: 8
+  n_embd: 512
+  dropout: 0.1
+  bias: false
+  tie_weights: true
+train:
+  batch_size: 16
+  grad_accum_steps: 2
+  max_steps: 4000
+  lr: 3.0e-4
+  min_lr: 3.0e-5
+  warmup_steps: 200
+  weight_decay: 0.1
+  betas: [0.9, 0.95]
+  grad_clip: 1.0
+  precision: fp16
+  eval_interval: 250
+  eval_iters: 20
+  checkpoint_interval: 500
+  seed: 1337
+data:
+  corpus_glob: "data/raw/*.txt"
+  manifest: data/manifests/corpus_v2.json
+  shard_dir: data/shards/corpus_v2
+  train_split: 0.98
+tokenizer:
+  vocab_size: 8192
+  save_dir: data/checkpoints/base_50m/tokenizer
+run:
+  out_dir: data/checkpoints/kaggle_m1
