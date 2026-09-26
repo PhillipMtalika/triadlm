@@ -7,3 +7,4 @@ run_id,variant,checkpoint,config_hash,param_count,context_length,training_tokens
 20260925221237-6c6a,sft,data/checkpoints/tiny/sft.pt,316ce3c9a9bb1c0f,3287296,32,0,0,cpu,data/manifests/toy.json,{},6.128,458.5,0.0,0.067,0.0,0.0,1.0,-0.077,99.1,130.1,453.4,2026-09-25T22:12:37.256270+00:00
 20260925221245-5aa7,grounded,data/checkpoints/tiny/sft.pt,316ce3c9a9bb1c0f,3287296,32,0,0,cpu,data/manifests/toy.json,{},6.128,458.5,0.0,0.133,1.0,0.0,1.0,0.077,102.3,127.1,539024.4,2026-09-25T22:12:45.013651+00:00
 20260925221415-6c5f,constitutional,data/checkpoints/tiny/constitutional_out/constitutional.pt,316ce3c9a9bb1c0f,3287296,32,0,0,cpu,data/manifests/toy.json,{},6.1643,475.46,0.0,0.033,0.0,0.0,1.0,0.0,100.4,113.8,453.7,2026-09-25T22:14:15.033934+00:00
+20260926131614-01a2,dpo,data/checkpoints/tiny/sft.pt,316ce3c9a9bb1c0f,3287296,32,0,0,cpu,data/manifests/toy.json,{},6.2095,497.47,0.0,0.0,0.0,0.0,1.0,0.0,102.7,142.1,432.3,2026-09-26T13:16:14.203251+00:00
