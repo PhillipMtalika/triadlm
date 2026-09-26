@@ -1,0 +1,10 @@
+torch --index-url https://download.pytorch.org/whl/cpu
+tokenizers
+pyyaml
+tqdm
+fastapi
+uvicorn
+pydantic>=2
+requests
+huggingface_hub
+numpy
