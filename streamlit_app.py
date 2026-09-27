@@ -42,7 +42,7 @@ def branch_output(branch: str, prompt: str, mdir: str, tok, index) -> tuple[str,
     from triadlm.generate import complete
     from triadlm.model import GPT, config_from_dict
     from triadlm.tools import (CalculatorTool, DateTimeTool,
-                               DocumentSearchTool, decide_action)
+                               DocumentSearchTool, WebSearchTool, decide_action)
     ckpt = torch.load(os.path.join(mdir, BRANCHES[branch]),
                       map_location="cpu", weights_only=False)
     model = GPT(config_from_dict(ckpt["config"]["model"]))
@@ -68,6 +68,13 @@ def branch_output(branch: str, prompt: str, mdir: str, tok, index) -> tuple[str,
             r = DocumentSearchTool(index).call(query=prompt)
             ctx.append(f"Retrieved:\n{r.output}")
             cites.append(r.citation.render())
+            try:  # live Wikipedia (free, logged); silent offline
+                w = WebSearchTool().call(query=prompt)
+                if w.output:
+                    ctx.append(f"Wikipedia:\n{w.output}")
+                    cites.append(w.citation.render())
+            except Exception:
+                pass
         aug = prompt + ("\n\n[Context]\n" + "\n".join(ctx) if ctx else "")
         text = complete(model, tok, aug, max_new_tokens=128,
                         temperature=0.7, top_k=40, repetition_penalty=1.15)

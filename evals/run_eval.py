@@ -41,7 +41,8 @@ def build_generate(variant: str, checkpoint: str, docs_path: str | None):
 
     if variant == "grounded":
         from triadlm.tools import (CalculatorTool, DateTimeTool,
-                                   DocumentSearchTool, decide_action)
+                                   DocumentSearchTool, WebSearchTool,
+                                   decide_action)
 
         def gen(prompt: str) -> str:
             action = decide_action(prompt)
@@ -67,6 +68,14 @@ def build_generate(variant: str, checkpoint: str, docs_path: str | None):
                 r = DocumentSearchTool(index).call(query=prompt)
                 ctx.append(f"Retrieved:\n{r.output}")
                 cites.append(r.citation.render())
+            if action in ("retrieve_then_answer", "retrieve_verify_answer"):
+                try:  # live Wikipedia (free, logged); silent offline
+                    w = WebSearchTool().call(query=prompt)
+                    if w.output:
+                        ctx.append(f"Wikipedia:\n{w.output}")
+                        cites.append(w.citation.render())
+                except Exception:
+                    pass
             aug = prompt + ("\n\n[Context]\n" + "\n".join(ctx)
                             + "\nAnswer with citations:" if ctx else "")
             text = complete(model, tok, aug, max_new_tokens=48,

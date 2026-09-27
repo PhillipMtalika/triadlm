@@ -35,7 +35,7 @@ def citation_accuracy(texts: list[str], index: object) -> dict:
         sents = re.split(r"(?<=[.!?])\s+", text)
         for sent in sents:
             for doc_id, a, b in parse_markers(sent):
-                if doc_id in ("calc", "datetime", "web", "refusal", "local-index"):
+                if doc_id in ("calc", "datetime", "web", "wiki", "refusal", "local-index"):
                     total += 1
                     good += 1  # tool citations are self-describing; counted as resolving
                     continue

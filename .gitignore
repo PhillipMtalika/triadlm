@@ -11,3 +11,4 @@ data/registry/*
 tokenizer-out/
 wandb/
 data/tmp/
+experiments/runs/web_log.jsonl
