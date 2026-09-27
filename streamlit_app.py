@@ -70,13 +70,13 @@ def branch_output(branch: str, prompt: str, mdir: str, tok, index) -> tuple[str,
             cites.append(r.citation.render())
         aug = prompt + ("\n\n[Context]\n" + "\n".join(ctx) if ctx else "")
         text = complete(model, tok, aug, max_new_tokens=128,
-                        temperature=0.0, top_k=None)
+                        temperature=0.7, top_k=40, repetition_penalty=1.15)
         if cites:
             text += "\nSources: " + " ".join(cites)
         extra = f"action={action}"
     else:
         text = complete(model, tok, prompt, max_new_tokens=128,
-                        temperature=0.0, top_k=None)
+                        temperature=0.7, top_k=40, repetition_penalty=1.15)
     del model
     gc.collect()
     return text, extra

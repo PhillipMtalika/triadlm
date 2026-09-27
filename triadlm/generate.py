@@ -29,13 +29,14 @@ def load_for_inference(checkpoint_path: str) -> tuple["GPT", "TriadTokenizer"]:
 
 def complete(model: "GPT", tok: "TriadTokenizer", prompt: str,
              max_new_tokens: int = 200, temperature: float = 0.8,
-             top_k: int | None = 40) -> str:
+             top_k: int | None = 40, repetition_penalty: float = 1.0) -> str:
     """Complete a prompt (programmatic entrypoint for the eval harness)."""
     ids = tok.encode(prompt)
     idx = torch.tensor([ids], dtype=torch.long)
     with torch.no_grad():
         out = model.generate(idx, max_new_tokens=max_new_tokens,
-                             temperature=temperature, top_k=top_k)
+                             temperature=temperature, top_k=top_k,
+                             repetition_penalty=repetition_penalty)
     return tok.decode(out[0].tolist()[len(ids):])
 
 

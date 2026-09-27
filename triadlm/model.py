@@ -117,14 +117,26 @@ class GPT(nn.Module):
 
     @torch.no_grad()
     def generate(self, idx: Tensor, max_new_tokens: int,
-                 temperature: float = 1.0, top_k: int | None = None) -> Tensor:
-        """Sample autoregressively; temperature<=0 means greedy (deterministic)."""
+                 temperature: float = 1.0, top_k: int | None = None,
+                 repetition_penalty: float = 1.0) -> Tensor:
+        """Sample autoregressively; temperature<=0 means greedy (deterministic).
+
+        repetition_penalty > 1.0 discourages already-used tokens (loop breaker).
+        """
         self.eval()
         greedy = temperature <= 0
         for _ in range(max_new_tokens):
             idx_in = idx[:, -self.config.block_size:]
             logits, _ = self(idx_in)
             logits = logits[:, -1, :]
+            if repetition_penalty != 1.0:
+                for seq in idx.tolist():
+                    for t in set(seq):
+                        if 0 <= t < logits.size(-1):
+                            if logits[0, t] > 0:
+                                logits[0, t] /= repetition_penalty
+                            else:
+                                logits[0, t] *= repetition_penalty
             if greedy:
                 nxt = logits.argmax(dim=-1, keepdim=True)
             else:
