@@ -42,7 +42,7 @@ def branch_output(branch: str, prompt: str, mdir: str, tok, index) -> tuple[str,
     from triadlm.generate import complete
     from triadlm.model import GPT, config_from_dict
     from triadlm.tools import (CalculatorTool, DateTimeTool,
-                               DocumentSearchTool, WebSearchTool, decide_action)
+                               ground_query, decide_action)
     ckpt = torch.load(os.path.join(mdir, BRANCHES[branch]),
                       map_location="cpu", weights_only=False)
     model = GPT(config_from_dict(ckpt["config"]["model"]))
@@ -53,7 +53,7 @@ def branch_output(branch: str, prompt: str, mdir: str, tok, index) -> tuple[str,
         action = decide_action(prompt)
         if action == "refuse":
             return "I can't help with that. I can help with something else instead.", "refuse"
-        cites, ctx = [], []
+        cites, ctx, evidence = [], [], []
         if action == "retrieve_verify_answer":
             m = re.findall(r"(?=[\d\s()\-+*/^%.]*\d)[\d\s()\-+*/^%.]+", prompt)
             if m:
@@ -65,21 +65,19 @@ def branch_output(branch: str, prompt: str, mdir: str, tok, index) -> tuple[str,
             ctx.append(f"Date/Time: {r.output}")
             cites.append(r.citation.render())
         if action in ("retrieve_then_answer", "retrieve_verify_answer"):
-            r = DocumentSearchTool(index).call(query=prompt)
-            ctx.append(f"Retrieved:\n{r.output}")
-            cites.append(r.citation.render())
-            try:  # live Wikipedia (free, logged); silent offline
-                w = WebSearchTool().call(query=prompt)
-                if w.output:
-                    ctx.append(f"Wikipedia:\n{w.output}")
-                    cites.append(w.citation.render())
-            except Exception:
-                pass
-        aug = prompt + ("\n\n[Context]\n" + "\n".join(ctx) if ctx else "")
-        text = complete(model, tok, aug, max_new_tokens=128,
+            ev, ec = ground_query(prompt, index)
+            evidence = ev
+            cites.extend(ec)
+        aug = prompt + ("\n\n[Context]\n" + "\n".join(ctx + evidence) if ctx + evidence else "")
+        note = complete(model, tok, aug, max_new_tokens=64,
                         temperature=0.7, top_k=40, repetition_penalty=1.15)
+        parts = []
+        if evidence:
+            parts.append("Based on retrieved evidence:\n" + "\n".join(evidence))
+        parts.append("Model note: " + note.strip())
+        text = "\n\n".join(parts)
         if cites:
-            text += "\nSources: " + " ".join(cites)
+            text += "\nSources: " + " ".join(dict.fromkeys(cites))
         extra = f"action={action}"
     else:
         text = complete(model, tok, prompt, max_new_tokens=128,

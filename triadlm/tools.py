@@ -364,3 +364,36 @@ class WebSearchTool:
                   "ok" if not res.error else res.error)
         # normalize to a [wiki] marker so citation scorers count it as resolving
         return ToolResult(res.output, Citation("wiki", None), res.error)
+
+
+def ground_query(prompt: str, index: object | None = None,
+                 use_web: bool = True) -> tuple[list[str], list[str]]:
+    """Build evidence-first context for grounded answers.
+
+    Returns (context_blocks, citations): quoted local sentences with
+    [doc_id:start-end] markers, then the Wikipedia lead with [wiki].
+    Deterministic and model-free — callers prepend it to any generation.
+    """
+    ctx: list[str] = []
+    cites: list[str] = []
+    if index is not None:
+        try:
+            from .retrieval import select_evidence
+            hits = index.search(prompt, k=3)
+            for sent, p in select_evidence(hits, prompt):
+                mark = f"[{p.doc_id}:{p.offset[0]}-{p.offset[1]}]"
+                ctx.append(f"{mark} \"{sent}\"")
+                cites.append(mark)
+        except Exception:
+            pass
+    import re as _re
+    is_arithmetic = bool(_re.search(r"\d\s*[-+*/^%]\s*\d", prompt))
+    if use_web and not is_arithmetic:  # numbers belong to the calculator
+        try:
+            w = WebSearchTool().call(query=prompt)
+            if w.output:
+                ctx.append(f"[wiki] \"{w.output[:400]}\"")
+                cites.append("[wiki]")
+        except Exception:
+            pass
+    return ctx, cites

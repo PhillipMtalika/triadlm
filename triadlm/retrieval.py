@@ -73,3 +73,28 @@ class DocumentIndex:
                 d = json.loads(line)
                 idx.add(d.get("id", str(len(idx.docs))), d.get("text", ""), d)
         return idx
+
+
+def _content_tokens(s: str) -> set[str]:
+    toks = set(re.findall(r"[a-zA-Z\u00c0-\u024f]{3,}", s.lower()))
+    return toks - {"the", "and", "with", "from", "that", "this", "ndi", "ndiwo"}
+
+
+def select_evidence(passages: list[RetrievedPassage], query: str,
+                    max_sents: int = 3) -> list[tuple[str, RetrievedPassage]]:
+    """Pick the sentences most overlapping the query (extractive QA).
+
+    Returns (sentence, passage) pairs; the caller quotes them with the
+    passage's [doc_id:start-end] marker. Deterministic, no model needed —
+    this is what makes grounded answers useful even with a weak generator.
+    """
+    q = _content_tokens(query)
+    scored: list[tuple[int, str, RetrievedPassage]] = []
+    for p in passages:
+        for sent in re.split(r"(?<=[.!?])\s+", p.text):
+            sent = sent.strip()
+            if len(sent) < 20:
+                continue
+            scored.append((len(q & _content_tokens(sent)), sent, p))
+    scored.sort(key=lambda t: -t[0])
+    return [(s, p) for o, s, p in scored[:max_sents] if o > 0]

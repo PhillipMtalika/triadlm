@@ -22,7 +22,8 @@ def load_probes(path: str) -> list[dict]:
     return [json.loads(l) for l in open(path) if l.strip()]
 
 
-def build_generate(variant: str, checkpoint: str, docs_path: str | None):
+def build_generate(variant: str, checkpoint: str, docs_path: str | None,
+                   use_web: bool = False):
     """Build a prompt->text function for a variant; returns (gen, tok, index, cfg)."""
     import torch
     from triadlm.generate import complete
@@ -41,8 +42,7 @@ def build_generate(variant: str, checkpoint: str, docs_path: str | None):
 
     if variant == "grounded":
         from triadlm.tools import (CalculatorTool, DateTimeTool,
-                                   DocumentSearchTool, WebSearchTool,
-                                   decide_action)
+                                   ground_query, decide_action)
 
         def gen(prompt: str) -> str:
             action = decide_action(prompt)
@@ -50,6 +50,7 @@ def build_generate(variant: str, checkpoint: str, docs_path: str | None):
                 return "I can't help with that. I can help with something else instead."
             cites: list[str] = []
             ctx: list[str] = []
+            evidence: list[str] = []
             if action == "retrieve_verify_answer":
                 m = re.findall(r"(?=[\d\s()\-+*/^%.]*\d)[\d\s()\-+*/^%.]+", prompt)
                 if m:
@@ -64,24 +65,20 @@ def build_generate(variant: str, checkpoint: str, docs_path: str | None):
                 r = DateTimeTool().call()
                 ctx.append(f"Date/Time: {r.output}")
                 cites.append(r.citation.render())
-            if action in ("retrieve_then_answer", "retrieve_verify_answer") and index is not None:
-                r = DocumentSearchTool(index).call(query=prompt)
-                ctx.append(f"Retrieved:\n{r.output}")
-                cites.append(r.citation.render())
             if action in ("retrieve_then_answer", "retrieve_verify_answer"):
-                try:  # live Wikipedia (free, logged); silent offline
-                    w = WebSearchTool().call(query=prompt)
-                    if w.output:
-                        ctx.append(f"Wikipedia:\n{w.output}")
-                        cites.append(w.citation.render())
-                except Exception:
-                    pass
-            aug = prompt + ("\n\n[Context]\n" + "\n".join(ctx)
-                            + "\nAnswer with citations:" if ctx else "")
-            text = complete(model, tok, aug, max_new_tokens=48,
+                ev, ec = ground_query(prompt, index, use_web=use_web)
+                evidence = ev
+                cites.extend(ec)
+            aug = prompt + ("\n\n[Context]\n" + "\n".join(ctx + evidence) if ctx + evidence else "")
+            note = complete(model, tok, aug, max_new_tokens=48,
                             temperature=0.0, top_k=None)
+            parts = []
+            if evidence:
+                parts.append("Evidence:\n" + "\n".join(evidence))
+            parts.append(note.strip())
+            text = "\n".join(parts)
             if cites:
-                text = text.strip() + "\nSources: " + " ".join(cites)
+                text = text.strip() + "\nSources: " + " ".join(dict.fromkeys(cites))
             return text
     else:
         def gen(prompt: str) -> str:
@@ -135,7 +132,8 @@ def grade(probe: dict, pred: str) -> tuple[float, str]:
 
 
 def run_eval(checkpoint: str, variant: str, probes_path: str, out_path: str,
-             docs_path: str | None = None, manifest_path: str | None = None) -> dict:
+             docs_path: str | None = None, manifest_path: str | None = None,
+             use_web: bool = False) -> dict:
     """Run all probes; write run-record JSON + registry row; return record."""
     from evals.score_citations import citation_accuracy
     from evals.score_factuality import (chichewa_gap, factuality,
@@ -144,7 +142,8 @@ def run_eval(checkpoint: str, variant: str, probes_path: str, out_path: str,
     from triadlm.train import config_hash, log_registry_row
 
     probes = load_probes(probes_path)
-    gen, tok, index, cfg = build_generate(variant, checkpoint, docs_path)
+    gen, tok, index, cfg = build_generate(variant, checkpoint, docs_path,
+                                          use_web=use_web)
     records: list[dict] = []
     texts: list[str] = []
     lat: list[float] = []
@@ -239,10 +238,12 @@ def main() -> None:
     ap.add_argument("--out", default=None)
     ap.add_argument("--docs", default="data/documents.jsonl")
     ap.add_argument("--manifest", default=None)
+    ap.add_argument("--web", action="store_true",
+                    help="allow live Wikipedia per probe (slow, nondeterministic)")
     args = ap.parse_args()
     out = args.out or f"experiments/runs/{variant}-{int(time.time())}.json"
     rec = run_eval(args.checkpoint, args.variant, args.probes, out,
-                   args.docs, args.manifest)
+                   args.docs, args.manifest, use_web=args.web)
     print(json.dumps({k: v for k, v in rec.items()}, indent=2))
 
 
